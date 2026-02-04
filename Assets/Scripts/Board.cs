@@ -75,9 +75,12 @@ public class Board : MonoBehaviour
 
     bool BlockCheck(int x,int y, Block block)
     {
+        //二次元配列がからではないのは他のブロックがある時
+        //親が違うのは他のブロックがある時
         return(grid[x,y] != null && grid[x,y].parent != block.transform);
     }
 
+    //ブロックが落ちたポジションを記録する関数
     public void SaveBlockInGrid(Block block)
     {
         foreach(Transform item in block.transform)
