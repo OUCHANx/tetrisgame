@@ -1,3 +1,4 @@
+using System.Xml.Serialization;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -87,6 +88,64 @@ public class Board : MonoBehaviour
         {
             Vector2 pos = Rounding.Round(item.position);
             grid[(int)pos.x, (int)pos.y] = item;
+        }
+    }
+
+public void ClearAllRows()
+    {
+        for (int y = 0; y < height; y++)
+        {
+            if (isComplete(y))
+            {
+                //行が揃っていたら削除する関数を呼ぶ
+                ClearRow(y);
+                //上の行を一つ下げる関数を呼ぶ
+                DropRowsDown(y + 1);
+                //一行下げたのでyを一つ下げる
+                y--;
+            }
+        }
+    }
+
+    bool isComplete(int y)
+    {
+        for (int x = 0; x < width; x++)
+        {
+            if (grid[x,y] == null)
+            {
+                return false;
+            }
+        }
+        //全て埋まっていた時
+        return true;
+    }
+
+    //削除する関数
+    void ClearRow(int y)
+    {
+        for (int x = 0; x < width; x++)
+        {
+            if (grid[x,y] != null)
+            {
+                Destroy(grid[x,y].gameObject);
+            }
+            grid[x,y] = null;
+        }
+    }
+    //上にあるブロックを一段下げる関数
+    void DropRowsDown(int startRow)
+    {
+        for (int y = startRow; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                if (grid[x,y] !=null)
+                {
+                    grid[x,y-1] = grid[x,y];
+                    grid[x,y] = null;
+                    grid[x,y-1].position += new Vector3(0, -1, 0);
+                }
+            }
         }
     }
 }

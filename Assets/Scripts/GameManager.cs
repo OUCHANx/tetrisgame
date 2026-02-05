@@ -36,6 +36,7 @@ public class GameManager : MonoBehaviour
         nextKeyDownTimer = Time.time + nextKeyDownInterval;
         nextKeyLeftRightTimer = Time.time + nextKeyLeftRightInterval;
         nextKeyRotateTimer = Time.time + nextKeyRotateInterval;
+        nextdropTimer = Time.time + dropInterval;
         //スポナークラスからブロック生成関数を読んで変数に格納する
         if(!activeBlock)
         {
@@ -46,56 +47,62 @@ public class GameManager : MonoBehaviour
     private void Update()
     {
         PlayerInput();
+        AutoDrop();
     }
 
     void PlayerInput()
+{
+    var kb = Keyboard.current;
+    if (kb == null) return;
+
+    bool right = (kb.dKey.isPressed && Time.time > nextKeyLeftRightTimer) || kb.dKey.wasPressedThisFrame;
+    if (right)
     {
-        if (Input.GetKey(KeyCode.D) && (Time.time > nextKeyLeftRightTimer)
-         || Input.GetKeyDown(KeyCode.D))
-        {
-            activeBlock.MoveRight();
-            nextKeyLeftRightTimer = Time.time + nextKeyLeftRightInterval;
+        activeBlock.MoveRight();
+        nextKeyLeftRightTimer = Time.time + nextKeyLeftRightInterval;
+        if (!board.CheckPosition(activeBlock)) activeBlock.MoveLeft();
+    }
 
-            if (!board.CheckPosition(activeBlock))
-            {
-                activeBlock.MoveLeft();
-            }
-        }
-        else if (Input.GetKey(KeyCode.A) && (Time.time > nextKeyLeftRightTimer)
-        || Input.GetKeyDown(KeyCode.A))
-        {
-            activeBlock.MoveLeft();
-            nextKeyLeftRightTimer = Time.time + nextKeyLeftRightInterval;
+    bool left  = (kb.aKey.isPressed && Time.time > nextKeyLeftRightTimer) || kb.aKey.wasPressedThisFrame;
+    if (left)
+    {
+        activeBlock.MoveLeft();
+        nextKeyLeftRightTimer = Time.time + nextKeyLeftRightInterval;
+        if (!board.CheckPosition(activeBlock)) activeBlock.MoveRight();
+    }
 
-            if (!board.CheckPosition(activeBlock))
-            {
-                activeBlock.MoveRight();
-            }
-        }
-        else if (Input.GetKey(KeyCode.E) && (Time.time > nextKeyRotateTimer)
-         || Input.GetKeyDown(KeyCode.E))
-        {
-            activeBlock.RotateRight();
-            nextKeyRotateTimer = Time.time + nextKeyRotateInterval;
+    bool rotate = (kb.eKey.isPressed && Time.time > nextKeyRotateTimer) || kb.eKey.wasPressedThisFrame;
+    if (rotate)
+    {
+        activeBlock.RotateRight();
+        nextKeyRotateTimer = Time.time + nextKeyRotateInterval;
+        if (!board.CheckPosition(activeBlock)) activeBlock.RotateLeft();
+    }
 
-            if (!board.CheckPosition(activeBlock))
-            {
-                activeBlock.RotateLeft();
-            }
-        }
-        else if (Input.GetKey(KeyCode.S) && (Time.time > nextKeyDownTimer)
-         || Input.GetKeyDown(KeyCode.S))
-        {
-            activeBlock.MoveDown();
-            nextKeyDownTimer = Time.time + nextKeyDownInterval;
-            nextdropTimer = Time.time + dropInterval;
+    bool down = (kb.sKey.isPressed && Time.time > nextKeyDownTimer) || kb.sKey.wasPressedThisFrame;
+    if (down)
+    {
+        activeBlock.MoveDown();
+        nextKeyDownTimer = Time.time + nextKeyDownInterval;
+        nextdropTimer = Time.time + dropInterval;
+        if (!board.CheckPosition(activeBlock)) BottomBoard();
+    }
+}
 
-            if (!board.CheckPosition(activeBlock))
-            {
-                //そこについた時の処理
-                BottomBoard();
-            }
+    void AutoDrop()
+    {
+        if (Time.time <= nextdropTimer) return;
+
+        activeBlock.MoveDown();
+        nextdropTimer = Time.time + dropInterval;
+
+        if (!board.CheckPosition(activeBlock))
+        {
+            BottomBoard();
         }
+    }
+
+
 
         void BottomBoard()
         {
@@ -108,7 +115,10 @@ public class GameManager : MonoBehaviour
             nextKeyDownTimer = Time.time;
             nextKeyLeftRightTimer = Time.time;
             nextKeyRotateTimer = Time.time;
+            nextdropTimer = Time.time + dropInterval;
+
+
+            board.ClearAllRows();
         }
     }
 
-}
